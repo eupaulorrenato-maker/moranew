@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MobiliaNew — Inteligência de Obras & Oportunidades de Leilão</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --content: #0f172a;
+      --card: #111827;
+      --sidebar: #0b1120;
+      --border: #1e293b;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --placeholder: #64748b;
+      --primary: #10b981;
+      --primary-foreground: #ffffff;
+      --secondary: #1e293b;
+      --secondary-foreground: #f8fafc;
+      --accent: #10b981;
+    }
+    /* Custom scrollbars & transitions */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-dot {
+      animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.25); }
+    }
+    .blur-locked {
+      filter: blur(5px);
+      user-select: none;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased selection:bg-emerald-500/20 selection:text-emerald-400">
+
+  <!-- TOP NAVIGATION BAR (Global Switcher for Presentation Mode) -->
+  <header class="sticky top-0 z-40 bg-[var(--card)]/95 backdrop-blur border-b border-[var(--border)] px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-500 font-bold text-lg shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-base tracking-tight text-[var(--foreground)]">Mobilia<span class="text-emerald-500">New</span></span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 font-medium">B2B & Invest</span>
+          </div>
+          <p class="text-xs text-[var(--muted-foreground)] hidden sm:block">Radar de Alvarás de Obras & Inteligência de Leilões</p>
+        </div>
+      </div>
+
+      <!-- View Mode Tabs (Presentation Navigator) -->
+      <nav class="flex items-center gap-1 bg-[var(--background)] p-1 rounded-xl border border-[var(--border)] overflow-x-auto">
+        <button onclick="switchTab('landing')" id="tab-landing" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5">
+          <span>🎯 1. Landing & Isca (Funil)</span>
+        </button>
+        <button onclick="switchTab('obras')" id="tab-obras" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1.5">
+          <span>🏗️ 2. Radar de Obras (App)</span>
+        </button>
+        <button onclick="switchTab('leiloes')" id="tab-leiloes" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1.5">
+          <span>🔨 3. Radar de Leilões (Invest)</span>
+        </button>
+        <button onclick="switchTab('arquitetura')" id="tab-arquitetura" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1.5">
+          <span>🧠 4. Motor IA & CRM</span>
+        </button>
+      </nav>
+
+      <!-- Live Scraper Status Pill -->
+      <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--background)] border border-[var(--border)] text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+        <span class="text-[var(--muted-foreground)]">Querido Diário + Caixa + Receita:</span>
+        <span class="font-semibold text-[var(--foreground)]">1.428 alvarás hoje</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 1: LANDING PAGE & ISCA DE TOPO DE FUNIL (AUDITORIA INTERATIVA)       -->
+  <!-- ========================================================================= -->
+  <main id="view-landing" class="view-section fade-in">
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden border-b border-[var(--border)] py-12 lg:py-16 px-4">
+      <div class="max-w-6xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs font-semibold mb-6">
+          <span>⚡ Pare de pagar caro por cliques curiosos no tráfego pago</span>
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--foreground)] max-w-4xl mx-auto leading-tight">
+          Chegue na obra <span class="text-emerald-500 underline decoration-emerald-500/40">6 meses antes</span> da concorrência saber que ela existe.
+        </h1>
+        <p class="mt-5 text-base sm:text-lg text-[var(--muted-foreground)] max-w-3xl mx-auto leading-relaxed">
+          Nossa IA lê centenas de Diários Oficiais, sistemas de prefeituras e editais da Caixa todos os dias. Entregamos o <strong>Alvará de Construção recém-aprovado</strong>, o <strong>WhatsApp do decisor</strong> e a <strong>copy pronta de abordagem</strong> — ou a margem líquida real do leilão antes do seu lance.
+        </p>
+
+        <!-- Dual Value Prop Pills -->
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <button onclick="document.getElementById('isca-section').scrollIntoView({behavior:'smooth'})" class="px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/20 transition flex items-center gap-2">
+            <span>🔍 Fazer Auditoria Gratuita da Minha Cidade</span>
+          </button>
+          <button onclick="switchTab('obras')" class="px-5 py-3 rounded-xl bg-[var(--card)] hover:bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] font-semibold text-sm transition flex items-center gap-2">
+            <span>Explorar Painel do Sistema (Demo Ao Vivo) →</span>
+          </button>
+        </div>
+
+        <!-- Benchmark Trust Metrics -->
+        <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left">
+            <div class="text-xs text-[var(--muted-foreground)]">Fontes 100% Públicas (LAI)</div>
+            <div class="text-2xl font-bold text-[var(--foreground)] mt-1">+540 Prefeituras</div>
+            <div class="text-xs text-emerald-500 mt-1">Zero risco jurídico • Dados abertos</div>
+          </div>
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left">
+            <div class="text-xs text-[var(--muted-foreground)]">Validação Cruzada IA</div>
+            <div class="text-2xl font-bold text-[var(--foreground)] mt-1">DoubleCheck™</div>
+            <div class="text-xs text-emerald-500 mt-1">Alvará + Receita + Google Maps</div>
+          </div>
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left">
+            <div class="text-xs text-[var(--muted-foreground)]">Média de ROI (1 Venda)</div>
+            <div class="text-2xl font-bold text-[var(--foreground)] mt-1">18x a 45x</div>
+            <div class="text-xs text-emerald-500 mt-1">1 projeto paga 5 anos de assinatura</div>
+          </div>
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4 text-left">
+            <div class="text-xs text-[var(--muted-foreground)]">Radar de Leilões</div>
+            <div class="text-2xl font-bold text-[var(--foreground)] mt-1">Margem Real</div>
+            <div class="text-xs text-emerald-500 mt-1">Caixa + Judiciais + Custo Reforma</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ISCA DE TOPO DE FUNIL: AUDITORIA INTERATIVA GRATUITA -->
+    <section id="isca-section" class="py-12 px-4 border-b border-[var(--border)] bg-[var(--card)]/40">
+      <div class="max-w-6xl mx-auto">
+        <div class="bg-[var(--card)] border-2 border-emerald-500/40 rounded-2xl p-6 lg:p-8 shadow-xl">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-[var(--border)]">
+            <div>
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-md">Isca Interativa de Topo de Funil (Teste ao vivo)</span>
+              <h2 class="text-2xl font-bold text-[var(--foreground)] mt-2">Quantas obras aprovaram alvará na sua cidade nos últimos 7 dias?</h2>
+              <p class="text-sm text-[var(--muted-foreground)] mt-1">Selecione seu nicho e sua região abaixo para ver o dinheiro que você deixou na mesa esta semana.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <div>
+                <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Seu Nicho de Atuação</label>
+                <select id="audit-niche" onchange="runInteractiveAudit()" class="bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-500">
+                  <option value="marmoraria">🪨 Marmoraria & Pedras Ornamentais</option>
+                  <option value="planejados">🪚 Móveis Planejados & Marcenaria High-End</option>
+                  <option value="solar">☀️ Energia Solar & Automação Residencial</option>
+                  <option value="esquadrias">🪟 Esquadrias de Alumínio & Vidraçaria</option>
+                  <option value="investidor">🏦 Investidor de Leilão & Flipping</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Praça / Cidade Monitorada</label>
+                <select id="audit-city" onchange="runInteractiveAudit()" class="bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] text-xs font-semibold rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-emerald-500">
+                  <option value="campinas">📍 Campinas & Região (SP)</option>
+                  <option value="curitiba">📍 Curitiba & Região (PR)</option>
+                  <option value="goiania">📍 Goiânia & Condomínios (GO)</option>
+                  <option value="bh">📍 Belo Horizonte & Nova Lima (MG)</option>
+                  <option value="florianopolis">📍 Florianópolis & Litoral (SC)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Audit Summary Banner -->
+          <div id="audit-summary-banner" class="my-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Audit Results Preview Cards -->
+          <div id="audit-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Conversion Trigger Footer -->
+          <div class="mt-6 pt-5 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-amber-500 font-bold text-sm">!</div>
+              <div>
+                <p class="text-sm font-semibold text-[var(--foreground)]">Gatilho de Urgência: Seu concorrente ainda não viu esses alvarás.</p>
+                <p class="text-xs text-[var(--muted-foreground)]">No plano Pro (R$ 297/mês), você desbloqueia o CNPJ/CPF, telefone da Receita, engenheiro responsável e dispara no WhatsApp com 1 clique.</p>
+              </div>
+            </div>
+            <button onclick="switchTab('obras')" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs whitespace-nowrap transition shadow">
+              Desbloquear Painel Completo (Ver Modo Desbloqueado) →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARATIVO DE MERCADO (POR QUE SOMOS DIFERENTES) -->
+    <section class="py-12 px-4 border-b border-[var(--border)]">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto mb-10">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-500">Benchmark & Posicionamento</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mt-2">Por que o MobiliaNew reina sozinho no mercado?</h2>
+          <p class="text-sm text-[var(--muted-foreground)] mt-2">Enquanto ferramentas corporativas focam em burocracia documental e plataformas de leilão entregam apenas PDFs frios, nós entregamos <strong>vendas mastigadas e margem calculada</strong>.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Concorrente 1 -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 opacity-80">
+            <div class="text-xs font-semibold text-[var(--muted-foreground)] uppercase">Tráfego Pago / Panfletagem</div>
+            <h3 class="text-lg font-bold text-[var(--foreground)] mt-1">O Custo da Adivinhação</h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Você gasta R$ 3.000/mês no Meta Ads ou Google tentando adivinhar quem está construindo.</p>
+            <ul class="mt-4 space-y-2 text-xs text-[var(--muted-foreground)]">
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Leads curiosos pedindo orçamento sem obra</li>
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Chega quando a obra já fechou fornecedor</li>
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Guerra de preços sangrenta no final da obra</li>
+            </ul>
+          </div>
+
+          <!-- Concorrente 2 -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 opacity-80">
+            <div class="text-xs font-semibold text-[var(--muted-foreground)] uppercase">Docket / Portais de Leilão Puros</div>
+            <h3 class="text-lg font-bold text-[var(--foreground)] mt-1">Sistemas Isolados ou Corporativos</h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Focados em compliance jurídico para bancos ou listagens de leilão sem inteligência de reforma.</p>
+            <ul class="mt-4 space-y-2 text-xs text-[var(--muted-foreground)]">
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Não monitoram alvarás para lojistas locais</li>
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Não enriquecem WhatsApp de engenheiros/donos</li>
+              <li class="flex items-center gap-2"><span class="text-rose-500 font-bold">✕</span> Não cruzam custo de reforma por m² no leilão</li>
+            </ul>
+          </div>
+
+          <!-- MobiliaNew -->
+          <div class="bg-[var(--card)] border-2 border-emerald-500 rounded-2xl p-6 shadow-lg relative">
+            <span class="absolute -top-3 right-4 bg-emerald-600 text-white text-xs font-bold px-3 py-0.5 rounded-full">Nosso Ecossistema</span>
+            <div class="text-xs font-semibold text-emerald-500 uppercase">MobiliaNew Intelligence</div>
+            <h3 class="text-lg font-bold text-[var(--foreground)] mt-1">O Lead Mastigado + Copy Pronta</h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Unimos a aprovação do alvará na prefeitura + enriquecimento de dados + cálculo de margem de leilão.</p>
+            <ul class="mt-4 space-y-2 text-xs text-[var(--foreground)] font-medium">
+              <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Alerta no dia em que o alvará sai no Diário Oficial</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Cruzamento BrasilAPI + CREA/CAU + Redes Sociais</li>
+              <li class="flex items-center gap-2"><span class="text-emerald-500 font-bold">✓</span> Script de WhatsApp hiper-personalizado por IA</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRICING & SAAS MONETIZATION -->
+    <section class="py-12 px-4">
+      <div class="max-w-6xl mx-auto">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-500">Modelo de Assinatura Recorrente (SaaS B2B)</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mt-2">Um único orçamento fechado paga 5 anos de plataforma</h2>
+          <p class="text-sm text-[var(--muted-foreground)] mt-2">Custo operacional próximo de zero (dados públicos via LAI) = Margem SaaS altíssima e retenção blindada.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Plano Local -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">Plano Radar Local</div>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-3xl font-extrabold text-[var(--foreground)]">R$ 197</span>
+                <span class="text-xs text-[var(--muted-foreground)]">/mês</span>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-2">Ideal para marmorarias, vidraçarias e marcenarias focadas em 1 município.</p>
+              <ul class="mt-5 space-y-2.5 text-xs text-[var(--foreground)]">
+                <li>• <strong>1 Município</strong> monitorado em tempo real</li>
+                <li>• Até <strong>60 leads enriquecidos</strong>/mês</li>
+                <li>• Filtro por metragem (> 150m²) e padrão da obra</li>
+                <li>• Gerador de Scripts IA para WhatsApp</li>
+              </ul>
+            </div>
+            <button onclick="switchTab('obras')" class="mt-6 w-full py-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-semibold transition">Simular Plano no Dashboard</button>
+          </div>
+
+          <!-- Plano Pro Regional -->
+          <div class="bg-[var(--card)] border-2 border-emerald-500 rounded-2xl p-6 flex flex-col justify-between shadow-lg relative">
+            <span class="absolute -top-3 left-6 bg-emerald-600 text-white text-xs font-bold px-3 py-0.5 rounded-full">Mais Assinado (Médio Porte)</span>
+            <div>
+              <div class="text-xs font-bold uppercase text-emerald-500">Plano Pro Regional + Leilões</div>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-3xl font-extrabold text-[var(--foreground)]">R$ 297</span>
+                <span class="text-xs text-[var(--muted-foreground)]">/mês</span>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-2">Para lojas de planejados, energia solar, construtores e investidores.</p>
+              <ul class="mt-5 space-y-2.5 text-xs text-[var(--foreground)]">
+                <li>• <strong>Região Metropolitana inteira</strong> (até 5 cidades)</li>
+                <li>• <strong>Leads e Alvarás ilimitados</strong> com DoubleCheck™ IA</li>
+                <li>• <strong>Acesso ao Radar de Leilões</strong> (Caixa + Judiciais)</li>
+                <li>• Contato do Proprietário + Engenheiro/Arquiteto (RT)</li>
+                <li>• CRM Kanban integrado com alertas no WhatsApp</li>
+              </ul>
+            </div>
+            <button onclick="switchTab('obras')" class="mt-6 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition">Testar Experiência Pro Agora →</button>
+          </div>
+
+          <!-- Plano Enterprise -->
+          <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div class="text-xs font-bold uppercase text-[var(--muted-foreground)]">Plano Scale Estadual</div>
+              <div class="mt-2 flex items-baseline gap-1">
+                <span class="text-3xl font-extrabold text-[var(--foreground)]">R$ 497</span>
+                <span class="text-xs text-[var(--muted-foreground)]">/mês</span>
+              </div>
+              <p class="text-xs text-[var(--muted-foreground)] mt-2">Para indústrias, franquias, distribuidoras de materiais e fundos de FII/Leilão.</p>
+              <ul class="mt-5 space-y-2.5 text-xs text-[var(--foreground)]">
+                <li>• <strong>1 Estado Inteiro (UF)</strong> + Capitais</li>
+                <li>• Múltiplos usuários (Equipe de SDRs/Vendedores)</li>
+                <li>• Exportação via API / Webhook para HubSpot/RD/Pipedrive</li>
+                <li>• Leitura ilimitada de Editais PDF por IA</li>
+              </ul>
+            </div>
+            <button onclick="switchTab('leiloes')" class="mt-6 w-full py-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-semibold transition">Ver Módulo Investidor</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 2: RADAR DE OBRAS & ALVARÁS (INSPIRADO NO LICITEI / KASISKI / PAINEL) -->
+  <!-- ========================================================================= -->
+  <main id="view-obras" class="view-section hidden fade-in">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6">
+      
+      <!-- Top KPI Strip (Painel de Licitações Style) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Alvarás Capturados (Últimos 30d)</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold">+24%</span>
+          </div>
+          <div class="text-2xl font-bold mt-1">342 Obras</div>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1">Área construída total: <strong>118.450 m²</strong></div>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Potencial em Acabamentos (Seu Nicho)</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold">Marmoraria/Móveis</span>
+          </div>
+          <div class="text-2xl font-bold mt-1 text-emerald-500">R$ 14,8 Milhões</div>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1">Ticket médio estimado: <strong>R$ 85.000 / obra</strong></div>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Taxa de Enriquecimento IA</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 font-semibold">DoubleCheck™</span>
+          </div>
+          <div class="text-2xl font-bold mt-1">94,2%</div>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1">Decisor + Engenheiro Responsável localizados</div>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--muted-foreground)] font-medium">Abordagens Disparadas</span>
+            <span class="text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-semibold">4 Orçamentos</span>
+          </div>
+          <div class="text-2xl font-bold mt-1">28 Contatos</div>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1">Pipeline ativo: <strong>R$ 340.000 em negociação</strong></div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar (Licitei / Kasiski Style) -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 mb-6 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+          <div class="md:col-span-4">
+            <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Busca por Bairro, Condomínio, Proprietário ou RT</label>
+            <input id="filter-search" oninput="renderObrasList()" type="text" placeholder="Ex: Alphaville, Swiss Park, Residencial, Clínica..." class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:border-emerald-500">
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Foco do Fornecedor (Recalcula Score IA)</label>
+            <select id="filter-supplier" onchange="renderObrasList()" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--foreground)] focus:outline-none focus:border-emerald-500">
+              <option value="marmoraria">🪨 Marmoraria & Bancadas Gourmet</option>
+              <option value="planejados">🪚 Móveis Planejados Alto Padrão</option>
+              <option value="solar">☀️ Energia Solar Fotovoltaica</option>
+              <option value="engenharia">🧱 Materiais Brutos & Fundação</option>
+            </select>
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Fase / Gatilho do Alvará</label>
+            <select id="filter-stage" onchange="renderObrasList()" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:border-emerald-500">
+              <option value="all">Todas as Fases (Alvará + Habite-se)</option>
+              <option value="Alvará de Construção">🟢 Alvará de Construção (Início de Obra)</option>
+              <option value="Alvará de Reforma">🟡 Alvará de Reforma / Ampliação</option>
+              <option value="Habite-se / Conclusão">🔵 Pré-Habite-se (Fase Final / Mudança)</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs text-[var(--muted-foreground)] mb-1 font-medium">Metragem Mínima</label>
+            <select id="filter-area" onchange="renderObrasList()" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs text-[var(--foreground)] focus:outline-none focus:border-emerald-500">
+              <option value="0">Qualquer m²</option>
+              <option value="200">+200 m² (Médio/Alto)</option>
+              <option value="350">+350 m² (Luxo / Comercial)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Split Layout: Left Feed (Cards) + Right Inspector (Enriquecimento & Copy IA) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Feed of Alvarás (7 cols) -->
+        <div class="lg:col-span-7 space-y-3" id="obras-feed-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Right Column: AI Inspector, Decision Maker Enrichment & Copy Generator (5 cols) -->
+        <div class="lg:col-span-5 lg:sticky lg:top-20">
+          <div id="obra-inspector" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+            <!-- Populated dynamically when clicking an Obra card -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 3: RADAR DE LEILÕES & CALCULADORA DE MARGEM REAL (INVESTIDORES)      -->
+  <!-- ========================================================================= -->
+  <main id="view-leiloes" class="view-section hidden fade-in">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6">
+      
+      <!-- Header Banner -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 mb-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">Módulo Investidor & Flipping</span>
+            <span class="text-xs text-[var(--muted-foreground)]">Caixa Econômica • Banco do Brasil • Santander • Leilões Judiciais</span>
+          </div>
+          <h2 class="text-xl font-bold text-[var(--foreground)] mt-1.5">Radar de Oportunidades Imobiliárias com Margem Líquida Real</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-0.5">Nossa IA lê o edital de 45 páginas e a matrícula do imóvel em 8 segundos, detecta dívidas de IPTU/Condomínio e cruza com o custo de reforma da nossa base de fornecedores.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select id="leilao-filter-type" onchange="renderLeiloesList()" class="bg-[var(--background)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-semibold text-[var(--foreground)]">
+            <option value="all">Todas as Modalidades (1º/2º Leilão & Venda Direta)</option>
+            <option value="Venda Direta Caixa">🔥 Venda Direta Online (Caixa - Aceita FGTS/Financ.)</option>
+            <option value="2º Leilão Extrajudicial">⚡ 2º Leilão SFI (Deságio > 40%)</option>
+            <option value="Leilão Judicial">⚖️ Judicial (Alta Margem Bruta)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Split View: Left Auction Cards (7 cols) + Right Interactive ROI Simulator & Edital X-Ray (5 cols) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <div class="lg:col-span-7 space-y-3" id="leiloes-feed-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="lg:col-span-5 lg:sticky lg:top-20">
+          <div id="leilao-inspector" class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 4: ARQUITETURA DE DADOS, MOTOR IA & PIPELINE CRM KANBAN              -->
+  <!-- ========================================================================= -->
+  <main id="view-arquitetura" class="view-section hidden fade-in">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-8">
+      
+      <!-- Section 1: Data Pipeline Visual Architecture -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
+        <div class="max-w-3xl">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-500">Arquitetura de Custo Marginal Zero (100% Dados Públicos - LAI)</span>
+          <h2 class="text-xl font-bold text-[var(--foreground)] mt-1">Como transformamos Diários Oficiais arcaicos em dinheiro no bolso do lojista</h2>
+          <p class="text-xs text-[var(--muted-foreground)] mt-1">Fluxo automatizado de captura, enriquecimento e geração de abordagem que roda na madrugada antes das lojas abrirem.</p>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Step 1 -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 relative">
+            <div class="text-xs font-bold text-emerald-500">ETAPA 01 • RASPAGEM</div>
+            <div class="font-bold text-sm mt-1">Coleta Pública Bruta</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Monitoramento diário via <strong>Querido Diário (Open Source)</strong>, portais de licenciamento municipal (Alvarás/Habite-se) e API de Leilões da Caixa.</p>
+            <div class="mt-3 pt-2 border-t border-[var(--border)] text-xs font-mono text-[var(--muted-foreground)]">Custo: R$ 0,00 (Público)</div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 relative">
+            <div class="text-xs font-bold text-sky-400">ETAPA 02 • PARSING & IA</div>
+            <div class="font-bold text-sm mt-1">Estruturação Semântica</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">LLMs extraem: Endereço da obra, Metragem (m²), Tipo (Residencial Alto Padrão vs Galpão), Proprietário e CREA/CAU do Engenheiro/Arquiteto.</p>
+            <div class="mt-3 pt-2 border-t border-[var(--border)] text-xs font-mono text-[var(--muted-foreground)]">Precisão DoubleCheck™: 98.7%</div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 relative">
+            <div class="text-xs font-bold text-amber-500">ETAPA 03 • ENRIQUECIMENTO</div>
+            <div class="font-bold text-sm mt-1">Cruzamento de Decisores</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Cruza CNPJ/Nome com <strong>BrasilAPI (Receita Federal)</strong>, Google Maps (escritório de arquitetura responsável) e Instagram comercial.</p>
+            <div class="mt-3 pt-2 border-t border-[var(--border)] text-xs font-mono text-[var(--muted-foreground)]">Retorna: WhatsApp + E-mail + Sócios</div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bg-[var(--background)] border border-emerald-500/40 rounded-xl p-4 relative">
+            <div class="text-xs font-bold text-emerald-500">ETAPA 04 • CONVERSÃO</div>
+            <div class="font-bold text-sm mt-1">Lead + Copy no WhatsApp</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Calcula o <strong>Score de Aderência (0-100)</strong> para o nicho do assinante e escreve a mensagem ideal para abordar o arquiteto ou proprietário.</p>
+            <div class="mt-3 pt-2 border-t border-[var(--border)] text-xs font-mono text-emerald-500">1 clique → Conversa Iniciada</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Mini Kanban CRM de Prospecção Ativa -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-500">Retenção & Uso Diário</span>
+            <h3 class="text-lg font-bold text-[var(--foreground)]">CRM Integrado: Funil de Obras e Arremates Salvos</h3>
+            <p class="text-xs text-[var(--muted-foreground)]">Quando você clica em "Salvar no CRM" no Radar de Obras, o lead cai direto aqui para acompanhamento da equipe comercial.</p>
+          </div>
+          <div class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
+            Pipeline Total em Aberto: <span id="crm-total-value">R$ 412.000</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="crm-board">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Section 3: Roadmap de Execução em 3 Fases -->
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
+        <h3 class="text-lg font-bold text-[var(--foreground)] mb-4">Plano de Execução & Go-To-Market (Fases de Lançamento)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-[var(--background)] border-l-4 border-emerald-500">
+            <div class="text-xs font-bold text-emerald-500">FASE 1 • MESES 1 A 3</div>
+            <div class="font-bold text-sm mt-1">MVP Regional & 10 Clientes Beta</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Raspagem focada em 3 a 5 cidades-polo. Validação direta com 10 marmorarias, lojas de planejados e construtores locais usando a Isca de Auditoria Gratuita no WhatsApp.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-[var(--background)] border-l-4 border-sky-500">
+            <div class="text-xs font-bold text-sky-400">FASE 2 • MESES 4 A 6</div>
+            <div class="font-bold text-sm mt-1">Motor IA de Editais + Módulo Leilões</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Lançamento da leitura automática de matrículas/editais da Caixa e cruzamento da tabela SINAPI/fornecedores para atrair investidores imobiliários e arquitetos.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-[var(--background)] border-l-4 border-amber-500">
+            <div class="text-xs font-bold text-amber-500">FASE 3 • MESES 7 A 12</div>
+            <div class="font-bold text-sm mt-1">Escala Nacional (Capitais & Polos)</div>
+            <p class="text-xs text-[var(--muted-foreground)] mt-2">Cobertura automatizada de +500 municípios via Querido Diário + scrapers proprietários. Aquisição em escala com páginas programáticas por cidade ("Obras em [Cidade]").</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2">
+    <span id="toast-msg">Ação realizada com sucesso!</span>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT ENGINE (REALISTIC DATA, AUDIT CALCULATOR, AI SCRIPTS, ROI)     -->
+  <!-- ========================================================================= -->
+  <script>
+    // 1. DATABASE OF REALISTIC OBRAS (ALVARÁS)
+    const obrasData = [
+      {
+        id: "OBR-2026-891",
+        protocolo: "ALV-2026/084912-DOM",
+        titulo: "Residência Unifamiliar Alto Padrão — Condomínio Alphaville Dom Pedro",
+        cidade: "Campinas (SP)",
+        bairro: "Alphaville Dom Pedro",
+        publicadoHa: "Publicado hoje às 07:15 • Diário Oficial Municipal",
+        fase: "Alvará de Construção",
+        areaM2: 485,
+        pavimentos: 2,
+        padrao: "Altíssimo Padrão (Luxo)",
+        proprietario: "Henrique Vasconcelos & Associados Participações LTDA",
+        cnpjCpf: "34.819.204/0001-55 (CNPJ Patrimonial)",
+        responsavelTecnico: "Arq. Camila Albuquerque (CAU A14920-2)",
+        escritorioRT: "Studio Albuquerque Arquitetura Contemporânea",
+        whatsappDecisor: "(19) 99814-7720",
+        instagramRT: "@studioalbuquerquearq",
+        enderecoObra: "Alameda das Quaresmeiras, Lote 14, Quadra G — Alphaville",
+        estimativaGasto: {
+          marmoraria: { valor: "R$ 135.000", itens: "Bancadas ilha gourmet em Quartzito Taj Mahal, 5 suítes em mármore esculpido, escada plissada e lareira externa." },
+          planejados: { valor: "R$ 260.000", itens: "Cozinha integrada gourmet, closet master 28m², painéis ripados em freijó, home theater e 4 suítes completas." },
+          solar: { valor: "R$ 58.000", itens: "Usina fotovoltaica 18 kWp + aquecimento solar de piscina com borda infinita + infraestrutura wallbox." },
+          engenharia: { valor: "R$ 680.000", itens: "Concreto usinado, aço CA-50, impermeabilização estrutural e cobertura metálica." }
+        },
+        scores: { marmoraria: 98, planejados: 99, solar: 94, engenharia: 88 },
+        doubleCheck: "Confirmado no DOM pág. 42 + CNPJ ativo na Receita Federal (Capital Social R$ 2,4M) + Escritório da Arquiteta verificado no Google Maps."
+      },
+      {
+        id: "OBR-2026-892",
+        protocolo: "ALV-2026/084790-DOM",
+        titulo: "Clínica Médica & Dermatologia Avançada — Edifício Prime Center",
+        cidade: "Campinas (SP)",
+        bairro: "Cambuí",
+        publicadoHa: "Publicado ontem • Secretaria de Urbanismo (SEMURB)",
+        fase: "Alvará de Reforma",
+        areaM2: 310,
+        pavimentos: 1,
+        padrao: "Comercial / Saúde High-End",
+        proprietario: "Instituto DermaVita Saúde Estética S/S",
+        cnpjCpf: "41.009.512/0001-18",
+        responsavelTecnico: "Eng. Rodrigo Paiva (CREA-SP 506918231)",
+        escritorioRT: "RP Engenharia Clínica & Corporativa",
+        whatsappDecisor: "(19) 99102-4490",
+        instagramRT: "@rpengenhariaclinica",
+        enderecoObra: "Av. Coronel Silva Teles, 840 — Cambuí",
+        estimativaGasto: {
+          marmoraria: { valor: "R$ 78.000", itens: "Balcão recepção curvo em Corian/Quartzo Branco, 8 consultórios com bancadas assépticas e lavabos VIP." },
+          planejados: { valor: "R$ 165.000", itens: "Marcenaria hospitalar de luxo, armários embutidos em 8 salas de procedimento, recepção acústica e copa." },
+          solar: { valor: "R$ 42.000", itens: "Automação DALI de iluminação cênica, climatização VRF eficiente e geração remota." },
+          engenharia: { valor: "R$ 290.000", itens: "Drywall acústico, piso vinílico hospitalar, elétrica trifásica e gases medicinais." }
+        },
+        scores: { marmoraria: 95, planejados: 97, solar: 79, engenharia: 85 },
+        doubleCheck: "Alvará de Reforma Comercial c/ exigência ANVISA aprovada + Sócio-Administrador Dra. Fernanda Prado identificada via Receita."
+      },
+      {
+        id: "OBR-2026-893",
+        protocolo: "ALV-2026/084110-DOM",
+        titulo: "Residência Contemporânea — Condomínio Swiss Park (Residencial Berna)",
+        cidade: "Campinas (SP)",
+        bairro: "Swiss Park",
+        publicadoHa: "Há 2 dias • Diário Oficial Municipal",
+        fase: "Alvará de Construção",
+        areaM2: 360,
+        pavimentos: 2,
+        padrao: "Alto Padrão",
+        proprietario: "Marcos Vinícius Nogueira (Pessoa Física -> Construtora Spe)",
+        cnpjCpf: "29.441.800/0001-09 (Nogueira Bens Próprios)",
+        responsavelTecnico: "Arq. Juliana Ferraz (CAU A88310-9)",
+        escritorioRT: "Studio JF Arquitetura",
+        whatsappDecisor: "(19) 98231-0911",
+        instagramRT: "@julianaferraz.arq",
+        enderecoObra: "Rua dos Alpes Suíços, Lote 08 — Swiss Park",
+        estimativaGasto: {
+          marmoraria: { valor: "R$ 92.000", itens: "Ilha gourmet em Granito São Gabriel Escovado, bancadas de 4 suítes em Quartzo Cinza e borda de piscina." },
+          planejados: { valor: "R$ 185.000", itens: "Cozinha planejada, área gourmet, home office duplo e 4 dormitórios." },
+          solar: { valor: "R$ 46.000", itens: "Sistema fotovoltaico 14 kWp + trocador de calor para piscina." },
+          engenharia: { valor: "R$ 510.000", itens: "Fundação radier, estrutura mista aço/concreto e esquadrias automatizadas." }
+        },
+        scores: { marmoraria: 93, planejados: 94, solar: 96, engenharia: 92 },
+        doubleCheck: "Alvará inicial emitido + Projeto aprovado na associação do condomínio Swiss Park."
+      },
+      {
+        id: "OBR-2026-894",
+        protocolo: "HAB-2026/019204-DOM",
+        titulo: "Mansão Suspensa — Condomínio Fazenda Boa Vista / Gramado",
+        cidade: "Campinas (SP)",
+        bairro: "Gramado (Cond. Fechado)",
+        publicadoHa: "Há 3 dias • Portal de Licenciamento",
+        fase: "Habite-se / Conclusão",
+        areaM2: 620,
+        pavimentos: 3,
+        padrao: "Ultra Luxo",
+        proprietario: "Agropecuária & Holding Santa Helena LTDA",
+        cnpjCpf: "11.902.384/0001-77",
+        responsavelTecnico: "Eng. Gustavo Meirelles (CREA-SP 50112940)",
+        escritorioRT: "Meirelles Engenharia de Luxo",
+        whatsappDecisor: "(19) 99740-1122",
+        instagramRT: "@meirellesengenharia",
+        enderecoObra: "Alameda das Figueiras, Lote 02 — Fazenda Gramado",
+        estimativaGasto: {
+          marmoraria: { valor: "R$ 65.000", itens: "Fase final: Tampos de mobiliário solto, adega climatizada em ônix iluminado e área de fogo externa." },
+          planejados: { valor: "R$ 310.000", itens: "URGENTE: Obra em fase de acabamento final! Closets, adega, cozinha principal e suítes prontos para medição fina." },
+          solar: { valor: "R$ 74.000", itens: "Baterias de backup Tesla/BYD + automação Savant + usina 25 kWp." },
+          engenharia: { valor: "R$ 95.000", itens: "Paisagismo final, pavimentação externa e limpeza pós-obra." }
+        },
+        scores: { marmoraria: 84, planejados: 99, solar: 91, engenharia: 60 },
+        doubleCheck: "Vistoria pré-Habite-se solicitada. Momento exato de instalação de marcenaria fina, cortinas, automação e decoração."
+      }
+    ];
+
+    // 2. DATABASE OF REALISTIC LEILÕES (INVESTIDOR)
+    const leiloesData = [
+      {
+        id: "LEI-2026-101",
+        titulo: "Casa em Condomínio Fechado (340m²) — Swiss Park",
+        modalidade: "Venda Direta Caixa",
+        origem: "Caixa Econômica Federal • Edital nº 3042/2026",
+        cidade: "Campinas (SP)",
+        dataLimite: "Propostas abertas (Compra Imediata s/ Disputa)",
+        valorAvaliacao: 1650000,
+        lanceMinimo: 990000,
+        desagioPct: 40,
+        custoReformaEst: 115000,
+        dividasEdital: 18500, // IPTU + Condomínio atrasado (caixa paga parte ou comprador assume até limite)
+        ocupacao: "Ocupado (Desocupação amigável estimada em 60-90 dias)",
+        aceitaFinanciamento: "Sim (Financiamento Caixa até 80% + FGTS)",
+        riscoJuridico: "Baixo (Consolidação da propriedade averbada na Matrícula nº 94.112 - 3º CRI)",
+        resumoIA: [
+          "✅ Matrícula nº 94.112 limpa de penhoras trabalhistas ou indisponibilidades.",
+          "💰 O Edital prevê que dívidas de condomínio acima de 10% do valor de avaliação são quitadas pela própria Caixa (Cláusula 4.2).",
+          "🛠️ Reforma necessária: Atualização de bancadas gourmet, pintura geral e revisão de marcenaria (Orçamento pré-cotado c/ fornecedores MobiliaNew: R$ 115k)."
+        ]
+      },
+      {
+        id: "LEI-2026-102",
+        titulo: "Apartamento Alto Padrão (186m² • 3 Suítes • 3 Vagas) — Cambuí",
+        modalidade: "2º Leilão Extrajudicial",
+        origem: "Santander Imóveis / Zukerman Leilões",
+        cidade: "Campinas (SP)",
+        dataLimite: "Encerra em 4 dias (06/Nov às 15:00)",
+        valorAvaliacao: 1420000,
+        lanceMinimo: 795000,
+        desagioPct: 44,
+        custoReformaEst: 85000,
+        dividasEdital: 0,
+        ocupacao: "Desocupado (Chaves na administradora do condomínio!)",
+        aceitaFinanciamento: "Sim (Parcelamento em até 420x ou à vista c/ +5% desconto)",
+        riscoJuridico: "Muito Baixo (Imóvel Vazio • Posse imediata após carta de arrematação)",
+        resumoIA: [
+          "🔥 JOIA RARA: Imóvel confirmado DESOCUPADO em diligência presencial + Edital quita 100% de IPTU e Condomínio anteriores até a data do leilão.",
+          "📈 Última unidade idêntica no mesmo prédio (11º andar) foi vendida há 40 dias por R$ 1.390.000 (Base ITBI Municipal).",
+          "🪚 Retrofit rápido de 45 dias (piso vinílico + ilha de quartzo + marcenaria cozinha) eleva o valor de revenda para R$ 1.480.000."
+        ]
+      },
+      {
+        id: "LEI-2026-103",
+        titulo: "Galpão Logístico / Comercial em Avenida Arterial (850m² terreno)",
+        modalidade: "Leilão Judicial",
+        origem: "TJSP • 4ª Vara Cível • Processo 1004921-88.2023",
+        cidade: "Curitiba / Região Sul",
+        dataLimite: "2ª Praça encerra em 6 dias",
+        valorAvaliacao: 2200000,
+        lanceMinimo: 1100000,
+        desagioPct: 50,
+        custoReformaEst: 140000,
+        dividasEdital: 32000,
+        ocupacao: "Locado para distribuidora (Gera renda imediata de R$ 14.500/mês)",
+        aceitaFinanciamento: "Parcelamento Judicial (25% de entrada + 30 parcelas corrigidas pelo INPC)",
+        riscoJuridico: "Médio-Baixo (Intimações de todos os executados validadas pelo DoubleCheck™ IA)",
+        resumoIA: [
+          "⚖️ Arrematação pelo Art. 895 do CPC: Entrada de apenas R$ 275.000 e saldo em 30x sem juros (apenas correção monetária).",
+          "🏢 Imóvel já alugado: O próprio aluguel do inquilino atual (R$ 14,5k/mês) ajuda a pagar grande parte da parcela judicial.",
+          "🛡️ Sub-rogação dos créditos tributários (Art. 130 CTN): IPTU anterior é abatido do próprio preço da arrematação."
+        ]
+      }
+    ];
+
+    // 3. AUDIT DATA BY CITY & NICHE (FOR TOP OF FUNNEL BAIT)
+    const auditDatabase = {
+      campinas: { nome: "Campinas & Região (SP)", obras7d: 47, areaTotal: "16.420 m²", bairros: ["Alphaville Dom Pedro", "Swiss Park", "Cambuí"] },
+      curitiba: { nome: "Curitiba & Região (PR)", obras7d: 53, areaTotal: "19.100 m²", bairros: ["Ecoville", "Batel", "Santa Felicidade"] },
+      goiania: { nome: "Goiânia & Condomínios (GO)", obras7d: 61, areaTotal: "24.800 m²", bairros: ["Aldeia do Vale", "Portal do Sol", "Setor Marista"] },
+      bh: { nome: "Belo Horizonte & Nova Lima (MG)", obras7d: 44, areaTotal: "17.900 m²", bairros: ["Vila da Serra", "Alphaville Lagoa dos Ingleses", "Belvedere"] },
+      florianopolis: { nome: "Florianópolis & Litoral (SC)", obras7d: 39, areaTotal: "15.300 m²", bairros: ["Jurerê Internacional", "Cacupé", "Campeche"] }
+    };
+
+    const nicheMultipliers = {
+      marmoraria: { label: "Marmoraria & Pedras", ticketMedio: 82000, itemExemplo: "Bancadas Gourmet, Escadas Esculpidas e Lavabos" },
+      planejados: { label: "Móveis Planejados", ticketMedio: 145000, itemExemplo: "Cozinha Completa, Closets e Painéis Ripados" },
+      solar: { label: "Energia Solar & Automação", ticketMedio: 44000, itemExemplo: "Usina Fotovoltaica 15kWp + Aquecimento Piscina" },
+      esquadrias: { label: "Esquadrias de Alumínio", ticketMedio: 95000, itemExemplo: "Pele de Vidro, Persianas Automatizadas e Porta Pivotante" },
+      investidor: { label: "Investidor de Leilões", ticketMedio: 380000, itemExemplo: "Lucro Líquido Médio por Arrematação (Flipping)" }
+    };
+
+    // CRM State
+    let crmItems = [
+      { id: "CRM-1", titulo: "Residência Alphaville Dom Pedro (485m²)", contato: "Arq. Camila Albuquerque", valor: "R$ 135.000", etapa: "novos", tag: "Alvará Hoje" },
+      { id: "CRM-2", titulo: "Clínica DermaVita Cambuí (310m²)", contato: "Eng. Rodrigo Paiva", valor: "R$ 78.000", etapa: "abordados", tag: "WhatsApp Enviado" },
+      { id: "CRM-3", titulo: "Mansão Fazenda Gramado (620m²)", contato: "Eng. Gustavo Meirelles", valor: "R$ 199.000", etapa: "orcamento", tag: "Planta Recebida" }
+    ];
+
+    let selectedObraId = obrasData[0].id;
+    let selectedLeilaoId = leiloesData[0].id;
+
+    // TAB NAVIGATION
+    function switchTab(tabName) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + tabName).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1.5";
+      });
+      const activeBtn = document.getElementById('tab-' + tabName);
+      if (activeBtn) {
+        activeBtn.className = "tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm flex items-center gap-1.5";
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // TOAST HELPER
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3200);
+    }
+
+    // 1. RUN INTERACTIVE AUDIT (TOP OF FUNNEL BAIT)
+    function runInteractiveAudit() {
+      const nicheKey = document.getElementById('audit-niche').value;
+      const cityKey = document.getElementById('audit-city').value;
+      const city = auditDatabase[cityKey];
+      const niche = nicheMultipliers[nicheKey];
+
+      const volumeTotal = (city.obras7d * niche.ticketMedio).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+      document.getElementById('audit-summary-banner').innerHTML = `
+        <div>
+          <div class="text-xs font-bold text-emerald-500 uppercase">Relatório em Tempo Real • ${city.nome}</div>
+          <div class="text-base sm:text-lg font-bold text-[var(--foreground)] mt-0.5">
+            Encontramos <span class="text-emerald-500 underline">${city.obras7d} novos alvarás</span> (${city.areaTotal} construídos) nos últimos 7 dias para <span class="text-emerald-500">${niche.label}</span>.
+          </div>
+          <div class="text-xs text-[var(--muted-foreground)] mt-1">Demanda reprimida estimada na sua região esta semana: <strong class="text-[var(--foreground)]">${volumeTotal}</strong> em ${niche.itemExemplo}.</div>
+        </div>
+        <div class="px-3.5 py-2 rounded-xl bg-[var(--card)] border border-[var(--border)] text-right shrink-0">
+          <div class="text-xs text-[var(--muted-foreground)]">Potencial Médio / Obra</div>
+          <div class="text-lg font-extrabold text-emerald-500">R$ ${niche.ticketMedio.toLocaleString('pt-BR')}</div>
+        </div>
+      `;
+
+      const sampleAreas = [485, 340, 290];
+      const sampleTypes = ["Residência Alto Padrão (Alvará Emitido há 6h)", "Reforma Comercial / Clínica (Alvará ontem)", "Casa em Condomínio Fechado (Alvará há 2 dias)"];
+      
+      let cardsHtml = "";
+      city.bairros.forEach((bairro, idx) => {
+        const estVal = Math.round((niche.ticketMedio * (1.2 - idx * 0.15)) / 1000) * 1000;
+        cardsHtml += `
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 flex flex-col justify-between relative overflow-hidden">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-500">📍 ${bairro}</span>
+                <span class="text-xs font-mono text-[var(--muted-foreground)]">${sampleAreas[idx]} m²</span>
+              </div>
+              <h4 class="font-bold text-sm text-[var(--foreground)] mt-2">${sampleTypes[idx]}</h4>
+              <p class="text-xs text-[var(--muted-foreground)] mt-1">Potencial p/ ${niche.label}: <strong class="text-emerald-500">R$ ${estVal.toLocaleString('pt-BR')}</strong></p>
+              
+              <!-- Locked / Blurred Decision Maker Preview (Trigger) -->
+              <div class="mt-3 p-2.5 rounded-lg bg-[var(--card)] border border-[var(--border)] text-xs space-y-1">
+                <div class="flex justify-between">
+                  <span class="text-[var(--muted-foreground)]">Proprietário:</span>
+                  <span class="blur-locked font-semibold">Carlos Eduardo M. Holding</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-[var(--muted-foreground)]">Arquiteto(a) RT:</span>
+                  <span class="blur-locked font-semibold">Arq. Mariana Costa CAU</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-[var(--muted-foreground)]">WhatsApp:</span>
+                  <span class="blur-locked font-semibold text-emerald-500">(19) 99812-4490</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="switchTab('obras')" class="mt-3 w-full py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 text-xs font-semibold transition">
+              🔓 Desbloquear Contato & Script IA
+            </button>
+          </div>
+        `;
+      });
+      document.getElementById('audit-cards-container').innerHTML = cardsHtml;
+    }
+
+    // 2. RENDER OBRAS FEED & INSPECTOR (VIEW 2)
+    function renderObrasList() {
+      const search = (document.getElementById('filter-search')?.value || "").toLowerCase();
+      const supplier = document.getElementById('filter-supplier')?.value || "marmoraria";
+      const stage = document.getElementById('filter-stage')?.value || "all";
+      const minArea = parseInt(document.getElementById('filter-area')?.value || "0", 10);
+
+      const filtered = obrasData.filter(o => {
+        const matchSearch = o.titulo.toLowerCase().includes(search) || o.bairro.toLowerCase().includes(search) || o.proprietario.toLowerCase().includes(search) || o.responsavelTecnico.toLowerCase().includes(search);
+        const matchStage = stage === "all" || o.fase === stage;
+        const matchArea = o.areaM2 >= minArea;
+        return matchSearch && matchStage && matchArea;
+      });
+
+      const container = document.getElementById('obras-feed-container');
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="bg-[var(--card)] border border-[var(--border)] rounded-xl p-8 text-center text-sm text-[var(--muted-foreground)]">Nenhum alvará encontrado para esses filtros. Tente limpar a busca.</div>`;
+        return;
+      }
+
+      if (!filtered.some(o => o.id === selectedObraId)) {
+        selectedObraId = filtered[0].id;
+      }
+
+      container.innerHTML = filtered.map(obra => {
+        const isSelected = obra.id === selectedObraId;
+        const score = obra.scores[supplier] || 92;
+        const estimativa = obra.estimativaGasto[supplier];
+
+        let badgeColor = "bg-emerald-500/15 text-emerald-500 border-emerald-500/30";
+        if (obra.fase.includes("Reforma")) badgeColor = "bg-amber-500/15 text-amber-500 border-amber-500/30";
+        if (obra.fase.includes("Habite-se")) badgeColor = "bg-sky-500/15 text-sky-400 border-sky-500/30";
+
+        return `
+          <div onclick="selectObra('${obra.id}')" class="cursor-pointer transition-all rounded-2xl p-4 sm:p-5 border ${isSelected ? 'bg-[var(--card)] border-2 border-emerald-500 shadow-md' : 'bg-[var(--card)]/70 border-[var(--border)] hover:border-emerald-500/50'}">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full border ${badgeColor}">${obra.fase}</span>
+                <span class="text-xs font-mono text-[var(--muted-foreground)]">${obra.protocolo}</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                <span class="text-xs font-bold text-emerald-500">Score IA: ${score}/100</span>
+              </div>
+            </div>
+
+            <h3 class="text-base font-bold text-[var(--foreground)] mt-2.5">${obra.titulo}</h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">📍 ${obra.enderecoObra} (${obra.cidade}) • ${obra.publicadoHa}</p>
+
+            <div class="mt-3.5 grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3 border-t border-[var(--border)] text-xs">
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Área / Porte:</span>
+                <span class="font-bold text-[var(--foreground)]">${obra.areaM2} m² (${obra.padrao})</span>
+              </div>
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Arquiteto / Eng. (RT):</span>
+                <span class="font-bold text-[var(--foreground)]">${obra.responsavelTecnico}</span>
+              </div>
+              <div class="col-span-2 sm:col-span-1">
+                <span class="text-[var(--muted-foreground)] block">Potencial Estimado:</span>
+                <span class="font-extrabold text-emerald-500">${estimativa.valor}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderObraInspector();
+    }
+
+    function selectObra(id) {
+      selectedObraId = id;
+      renderObrasList();
+    }
+
+    function renderObraInspector() {
+      const obra = obrasData.find(o => o.id === selectedObraId) || obrasData[0];
+      const supplier = document.getElementById('filter-supplier')?.value || "marmoraria";
+      const estimativa = obra.estimativaGasto[supplier];
+      const supplierName = document.getElementById('filter-supplier')?.selectedOptions[0]?.text || "Marmoraria";
+
+      const firstNameRT = obra.responsavelTecnico.split(' ')[1];
+      const scriptArquiteto = `Olá ${obra.responsavelTecnico.split('(')[0].trim()}, tudo bem? Vi pela publicação técnica de hoje que o projeto de ${obra.areaM2}m² no ${obra.bairro} (${obra.protocolo}) acabou de ter o ${obra.fase} liberado — parabéns pela aprovação!\n\nAqui na nossa empresa somos especialistas em atendimento técnico para escritórios de arquitetura (${estimativa.itens.toLowerCase()}). Posso te enviar nosso catálogo de especificações BIM/blocos e reservar uma condição exclusiva de RT para essa obra?`;
+
+      const scriptProprietario = `Olá! Vi que o alvará da obra de ${obra.areaM2}m² no ${obra.bairro} foi emitido recentemente. Nós fornecemos ${estimativa.itens.toLowerCase()} para diversas obras de alto padrão no condomínio e criamos uma modalidade de travamento de preço de tabela ainda na fase inicial da obra (economia média de 18%). Posso enviar nosso portfólio de obras entregues aí no ${obra.bairro}?`;
+
+      document.getElementById('obra-inspector').innerHTML = `
+        <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-500">Raio-X de Inteligência Comercial</span>
+            <h3 class="text-base font-bold text-[var(--foreground)] mt-0.5">${obra.id} • Enriquecimento Completo</h3>
+          </div>
+          <button onclick="saveToCRM('${obra.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition shadow-sm">
+            + Salvar no CRM
+          </button>
+        </div>
+
+        <!-- DoubleCheck Validation Banner -->
+        <div class="mt-3 p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-xs">
+          <div class="font-bold text-sky-400 flex items-center gap-1.5">
+            <span>🛡️ DoubleCheck™ IA (Fonte Oficial Verificada)</span>
+          </div>
+          <p class="text-[var(--muted-foreground)] mt-1">${obra.doubleCheck}</p>
+        </div>
+
+        <!-- Enriched Contacts Box -->
+        <div class="mt-4 space-y-2.5 text-xs">
+          <div class="p-3 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+            <div class="text-[var(--muted-foreground)]">Proprietário / titular do Alvará (Receita Federal):</div>
+            <div class="font-bold text-sm text-[var(--foreground)] mt-0.5">${obra.proprietario}</div>
+            <div class="text-[var(--muted-foreground)] font-mono mt-0.5">Doc: ${obra.cnpjCpf}</div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-[var(--background)] border border-emerald-500/40">
+            <div class="flex items-center justify-between">
+              <span class="text-emerald-500 font-bold">Responsável Técnico (Decisor / Especificador):</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-500 font-semibold">Canal Quente</span>
+            </div>
+            <div class="font-bold text-sm text-[var(--foreground)] mt-1">${obra.responsavelTecnico}</div>
+            <div class="text-[var(--muted-foreground)] mt-0.5">${obra.escritorioRT} • Insta: <span class="text-[var(--foreground)] font-medium">${obra.instagramRT}</span></div>
+            <div class="mt-2 flex items-center justify-between pt-2 border-t border-[var(--border)]">
+              <span class="font-mono font-bold text-emerald-500">📱 ${obra.whatsappDecisor}</span>
+              <button onclick="copyText('${obra.whatsappDecisor}', 'Telefone copiado!')" class="text-xs underline text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Copiar Número</button>
+            </div>
+          </div>
+
+          <!-- Demand Breakdown by IA -->
+          <div class="p-3 rounded-xl bg-[var(--background)] border border-[var(--border)]">
+            <div class="flex items-center justify-between">
+              <span class="text-[var(--muted-foreground)] font-medium">Demanda Prevista pela IA (${supplierName}):</span>
+              <span class="font-extrabold text-emerald-500 text-sm">${estimativa.valor}</span>
+            </div>
+            <p class="text-[var(--foreground)] mt-1 leading-relaxed">${estimativa.itens}</p>
+          </div>
+        </div>
+
+        <!-- AI Copywriter Generator -->
+        <div class="mt-4 pt-4 border-t border-[var(--border)]">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-[var(--foreground)]">✨ Script de Abordagem Gerado por IA</span>
+            <div class="flex gap-1">
+              <button onclick="setScriptTarget('rt')" id="btn-script-rt" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold">Abordar Arquiteto/Eng.</button>
+              <button onclick="setScriptTarget('prop')" id="btn-script-prop" class="px-2.5 py-1 rounded-lg bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] text-xs font-semibold">Abordar Proprietário</button>
+            </div>
+          </div>
+          <textarea id="ai-script-box" rows="5" class="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl p-3 text-xs text-[var(--foreground)] leading-relaxed focus:outline-none focus:border-emerald-500">${scriptArquiteto}</textarea>
+          <input type="hidden" id="hidden-script-rt" value="${scriptArquiteto.replace(/"/g, '&quot;')}">
+          <input type="hidden" id="hidden-script-prop" value="${scriptProprietario.replace(/"/g, '&quot;')}">
+
+          <div class="mt-2.5 flex gap-2">
+            <button onclick="copyScriptBox()" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition shadow flex items-center justify-center gap-1.5">
+              <span>📲 Copiar Copy & Abrir WhatsApp</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function setScriptTarget(target) {
+      const box = document.getElementById('ai-script-box');
+      const btnRt = document.getElementById('btn-script-rt');
+      const btnProp = document.getElementById('btn-script-prop');
+      if (target === 'rt') {
+        box.value = document.getElementById('hidden-script-rt').value;
+        btnRt.className = "px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold";
+        btnProp.className = "px-2.5 py-1 rounded-lg bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] text-xs font-semibold";
+      } else {
+        box.value = document.getElementById('hidden-script-prop').value;
+        btnProp.className = "px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-xs font-semibold";
+        btnRt.className = "px-2.5 py-1 rounded-lg bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)] text-xs font-semibold";
+      }
+    }
+
+    function copyScriptBox() {
+      const text = document.getElementById('ai-script-box').value;
+      navigator.clipboard?.writeText(text);
+      showToast("Copy personalizada copiada para a área de transferência!");
+    }
+
+    function copyText(txt, msg) {
+      navigator.clipboard?.writeText(txt);
+      showToast(msg);
+    }
+
+    function saveToCRM(obraId) {
+      const obra = obrasData.find(o => o.id === obraId);
+      const supplier = document.getElementById('filter-supplier')?.value || "marmoraria";
+      if (!obra) return;
+      crmItems.unshift({
+        id: "CRM-" + Date.now(),
+        titulo: obra.titulo.split('—')[0].trim() + ` (${obra.areaM2}m²)`,
+        contato: obra.responsavelTecnico.split('(')[0].trim(),
+        valor: obra.estimativaGasto[supplier].valor,
+        etapa: "novos",
+        tag: "Salvo Agora"
+      });
+      renderCRM();
+      showToast(`Obra ${obra.id} adicionada ao Pipeline CRM (Aba 4)!`);
+    }
+
+    // 3. RENDER LEILÕES FEED & MARGIN SIMULATOR (VIEW 3)
+    function renderLeiloesList() {
+      const filterType = document.getElementById('leilao-filter-type')?.value || "all";
+      const filtered = leiloesData.filter(l => filterType === "all" || l.modalidade === filterType);
+
+      if (!filtered.some(l => l.id === selectedLeilaoId)) {
+        selectedLeilaoId = filtered[0].id;
+      }
+
+      const container = document.getElementById('leiloes-feed-container');
+      container.innerHTML = filtered.map(leilao => {
+        const isSelected = leilao.id === selectedLeilaoId;
+        const lucroEst = leilao.valorAvaliacao - leilao.lanceMinimo - leilao.custoReformaEst - leilao.dividasEdital - Math.round(leilao.lanceMinimo * 0.08);
+        const roiPct = Math.round((lucroEst / (leilao.lanceMinimo + leilao.custoReformaEst)) * 100);
+
+        return `
+          <div onclick="selectLeilao('${leilao.id}')" class="cursor-pointer transition-all rounded-2xl p-5 border ${isSelected ? 'bg-[var(--card)] border-2 border-emerald-500 shadow-md' : 'bg-[var(--card)]/70 border-[var(--border)] hover:border-emerald-500/50'}">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 border border-amber-500/30">${leilao.modalidade}</span>
+                <span class="text-xs text-[var(--muted-foreground)]">${leilao.origem}</span>
+              </div>
+              <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-500">-${leilao.desagioPct}% Abaixo do Mercado</span>
+            </div>
+
+            <h3 class="text-base font-bold text-[var(--foreground)] mt-2.5">${leilao.titulo}</h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">📍 ${leilao.cidade} • ⏰ ${leilao.dataLimite}</p>
+
+            <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-[var(--border)] text-xs">
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Avaliação Mercado:</span>
+                <span class="font-semibold line-through text-[var(--muted-foreground)]">R$ ${leilao.valorAvaliacao.toLocaleString('pt-BR')}</span>
+              </div>
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Lance Mínimo:</span>
+                <span class="font-bold text-[var(--foreground)]">R$ ${leilao.lanceMinimo.toLocaleString('pt-BR')}</span>
+              </div>
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Reforma Cotada IA:</span>
+                <span class="font-semibold text-amber-500">R$ ${leilao.custoReformaEst.toLocaleString('pt-BR')}</span>
+              </div>
+              <div>
+                <span class="text-[var(--muted-foreground)] block">Lucro Líquido Est.:</span>
+                <span class="font-extrabold text-emerald-500">+R$ ${lucroEst.toLocaleString('pt-BR')} (${roiPct}%)</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderLeilaoInspector();
+    }
+
+    function selectLeilao(id) {
+      selectedLeilaoId = id;
+      renderLeiloesList();
+    }
+
+    function renderLeilaoInspector() {
+      const leilao = leiloesData.find(l => l.id === selectedLeilaoId) || leiloesData[0];
+
+      document.getElementById('leilao-inspector').innerHTML = `
+        <div class="border-b border-[var(--border)] pb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-500">Calculadora de Viabilidade & Raio-X do Edital</span>
+          <h3 class="text-base font-bold text-[var(--foreground)] mt-0.5">${leilao.titulo}</h3>
+        </div>
+
+        <!-- Resumo do Edital por IA -->
+        <div class="mt-3 p-3.5 rounded-xl bg-[var(--background)] border border-[var(--border)] space-y-2 text-xs">
+          <div class="font-bold text-[var(--foreground)] flex items-center justify-between">
+            <span>📄 Leitura Automática de Edital & Matrícula (IA)</span>
+            <span class="text-emerald-500 font-mono">Risco: ${leilao.riscoJuridico.split('(')[0]}</span>
+          </div>
+          ${leilao.resumoIA.map(item => `<p class="text-[var(--muted-foreground)] leading-relaxed">${item}</p>`).join('')}
+          <div class="pt-2 border-t border-[var(--border)] flex flex-wrap justify-between gap-2 text-xs">
+            <span class="text-[var(--muted-foreground)]">Status Posse: <strong class="text-[var(--foreground)]">${leilao.ocupacao.split('(')[0]}</strong></span>
+            <span class="text-emerald-500 font-semibold">${leilao.aceitaFinanciamento.split('(')[0]}</span>
+          </div>
+        </div>
+
+        <!-- Interactive Margin Sliders -->
+        <div class="mt-4 space-y-3 text-xs">
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="font-semibold text-[var(--foreground)]">Seu Lance Planejado (R$):</label>
+              <span id="lbl-lance" class="font-mono font-bold text-emerald-500">R$ ${leilao.lanceMinimo.toLocaleString('pt-BR')}</span>
+            </div>
+            <input id="sim-lance" type="range" min="${leilao.lanceMinimo}" max="${Math.round(leilao.valorAvaliacao * 0.85)}" step="10000" value="${leilao.lanceMinimo}" oninput="recalcLeilaoROI()" class="w-full accent-emerald-500 cursor-pointer">
+          </div>
+
+          <div>
+            <div class="flex justify-between mb-1">
+              <label class="font-semibold text-[var(--foreground)]">Orçamento de Reforma (Marmoraria + Planejados + Pintura):</label>
+              <span id="lbl-reforma" class="font-mono font-bold text-amber-500">R$ ${leilao.custoReformaEst.toLocaleString('pt-BR')}</span>
+            </div>
+            <input id="sim-reforma" type="range" min="20000" max="300000" step="5000" value="${leilao.custoReformaEst}" oninput="recalcLeilaoROI()" class="w-full accent-amber-500 cursor-pointer">
+          </div>
+        </div>
+
+        <!-- Financial Breakdown Box -->
+        <div id="leilao-math-box" class="mt-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-2 text-xs">
+          <!-- Populated by recalcLeilaoROI() -->
+        </div>
+
+        <button onclick="showToast('Solicitação enviada para 3 fornecedores parceiros cotarem a reforma deste imóvel!')" class="mt-4 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition shadow">
+          🛠️ Cotar Reforma Expressa com Lojistas do MobiliaNew
+        </button>
+      `;
+
+      recalcLeilaoROI();
+    }
+
+    function recalcLeilaoROI() {
+      const leilao = leiloesData.find(l => l.id === selectedLeilaoId) || leiloesData[0];
+      const lance = parseInt(document.getElementById('sim-lance')?.value || leilao.lanceMinimo, 10);
+      const reforma = parseInt(document.getElementById('sim-reforma')?.value || leilao.custoReformaEst, 10);
+
+      document.getElementById('lbl-lance').textContent = "R$ " + lance.toLocaleString('pt-BR');
+      document.getElementById('lbl-reforma').textContent = "R$ " + reforma.toLocaleString('pt-BR');
+
+      const comissaoLeiloeiro = Math.round(lance * 0.05); // 5%
+      const itbiRegistro = Math.round(lance * 0.035); // 3.5%
+      const custoTotal = lance + reforma + comissaoLeiloeiro + itbiRegistro + leilao.dividasEdital;
+      const lucroLiquido = leilao.valorAvaliacao - custoTotal;
+      const margemPct = Math.round((lucroLiquido / custoTotal) * 100);
+
+      document.getElementById('leilao-math-box').innerHTML = `
+        <div class="flex justify-between text-[var(--muted-foreground)]">
+          <span>Valor de Venda Estimado (Mercado):</span>
+          <span class="font-bold text-[var(--foreground)]">R$ ${leilao.valorAvaliacao.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="flex justify-between text-[var(--muted-foreground)]">
+          <span>(-) Comissão Leiloeiro (5%) + ITBI/Cartório (3.5%):</span>
+          <span>R$ ${(comissaoLeiloeiro + itbiRegistro).toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="flex justify-between text-[var(--muted-foreground)]">
+          <span>(-) Passivo Edital (IPTU/Condomínio Assumido):</span>
+          <span>R$ ${leilao.dividasEdital.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="flex justify-between text-[var(--muted-foreground)]">
+          <span>(-) Custo Total Investido (Lance + Reforma + Taxas):</span>
+          <span class="font-semibold text-[var(--foreground)]">R$ ${custoTotal.toLocaleString('pt-BR')}</span>
+        </div>
+        <div class="pt-2 border-t border-emerald-500/30 flex items-center justify-between">
+          <span class="font-bold text-sm text-[var(--foreground)]">Lucro Líquido Projetado:</span>
+          <span class="font-extrabold text-base ${lucroLiquido > 0 ? 'text-emerald-500' : 'text-rose-500'}">
+            R$ ${lucroLiquido.toLocaleString('pt-BR')} (${margemPct}% ROI)
+          </span>
+        </div>
+      `;
+    }
+
+    // 4. RENDER CRM BOARD (VIEW 4)
+    function renderCRM() {
+      const stages = [
+        { key: "novos", title: "🟢 Alvarás Salvos (Para Abordar)" },
+        { key: "abordados", title: "💬 Contato Iniciado (WhatsApp)" },
+        { key: "orcamento", title: "📐 Planta Recebida / Em Orçamento" }
+      ];
+
+      const board = document.getElementById('crm-board');
+      if (!board) return;
+
+      board.innerHTML = stages.map(st => {
+        const items = crmItems.filter(i => i.etapa === st.key);
+        return `
+          <div class="bg-[var(--background)] border border-[var(--border)] rounded-xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-[var(--foreground)]">${st.title}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--card)] border border-[var(--border)] font-bold">${items.length}</span>
+            </div>
+            <div class="space-y-2.5">
+              ${items.map(item => `
+                <div class="p-3 rounded-xl bg-[var(--card)] border border-[var(--border)] text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-semibold">${item.tag}</span>
+                    <span class="font-bold text-emerald-500">${item.valor}</span>
+                  </div>
+                  <div class="font-bold text-[var(--foreground)] mt-1.5">${item.titulo}</div>
+                  <div class="text-[var(--muted-foreground)] mt-0.5">Decisor: ${item.contato}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // INITIALIZE EVERYTHING ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      runInteractiveAudit();
+      renderObrasList();
+      renderLeiloesList();
+      renderCRM();
+    });
+  </script>
+</body>
+</html>
